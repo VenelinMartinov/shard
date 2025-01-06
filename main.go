@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/blampe/shard/internal"
@@ -26,10 +27,11 @@ func main() {
 	total := flag.Int("total", -1, "total number of shards")
 	seed := flag.Int64("seed", 0, "randomly shuffle tests using this seed")
 	output := flag.String("output", "", "output format (env)")
+	exclude := flag.String("exclude", "", "exclude paths matching this pattern")
 
 	flag.Parse()
 
-	p := prog{index: *index, total: *total, seed: *seed, root: *root, output: *output}
+	p := prog{index: *index, total: *total, seed: *seed, root: *root, output: *output, exclude: *exclude}
 	out, err := p.run()
 	if err != nil {
 		log.Fatal(err.Error())
@@ -43,6 +45,7 @@ type prog struct {
 	seed   int64
 	root   string
 	output string
+	exclude string
 }
 
 func (p prog) run() (string, error) {
@@ -62,6 +65,18 @@ func (p prog) run() (string, error) {
 	}
 
 	names, paths := internal.Assign(tests, p.index, p.total, p.seed)
+
+	if p.exclude != "" {
+		// regex match
+		re := regexp.MustCompile(p.exclude)
+		filteredPaths := make([]string, 0, len(paths))
+		for _, path := range paths {
+			if !re.MatchString(path) {
+				filteredPaths = append(filteredPaths, path)
+			}
+		}
+		paths = filteredPaths
+	}
 
 	// No-op if we didn't find any tests or get any assigned.
 	if len(paths) == 0 {

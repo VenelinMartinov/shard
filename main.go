@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/blampe/shard/internal"
+	"github.com/VenelinMartinov/shard/internal"
 )
 
 type testf struct {

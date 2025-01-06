@@ -1,3 +1,3 @@
-module github.com/blampe/shard
+module github.com/VenelinMartinov/shard
 
 go 1.21.0
